@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<!-- A CardView -->
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:foreground="?attr/selectableItemBackground"
+    card_view:cardBackgroundColor="#fff"
+    card_view:cardCornerRadius="5dp"
+    card_view:cardElevation="1dp">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp">
+            <!--自定义圆形图片展示logo -->
+            <com.jiesean.readancs.customview.CircleImageView
+                android:id="@+id/category_icon_iv"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="20dp"
+                android:src="@drawable/social"/>
+
+            <!--显示密码的名称-->
+            <TextView
+                android:id="@+id/notification_title_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="14dp"
+                android:layout_marginTop="4dp"
+                android:layout_toRightOf="@+id/category_icon_iv"
+                android:textSize="20dp" />
+            <!--显示账号名称-->
+            <TextView
+                android:id="@+id/category_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/notification_title_tv"
+                android:layout_marginLeft="14dp"
+                android:layout_toRightOf="@id/category_icon_iv"
+                android:textSize="12dp" />
+
+            <ImageView
+                android:id="@+id/more_info_btn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="20dp"
+                android:src="@drawable/more_info" />
+        </RelativeLayout>
+        <!--android:layout_width="390dp"-->
+        <RelativeLayout
+            android:id="@+id/more_info_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <View
+                android:id="@+id/t1"
+                android:layout_width="300dp"
+                android:layout_height="0.7dp"
+                android:layout_centerHorizontal="true"
+                android:background="#b9b9b9" />
+
+            <TextView
+                android:id="@+id/more_group_tag_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/t1"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="20dp"
+                android:text="Content" />
+            <TextView
+                android:id="@+id/content_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:layout_below="@+id/more_group_tag_textview"
+                />
+
+            <Button
+                android:id="@+id/positive_btn"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/content_tv"
+                android:text="Positive"
+                android:textColor="#FFBEBDBD" />
+            <Button
+                android:id="@+id/negative_btn"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/content_tv"
+                android:text="Negative"
+                android:textColor="#FFBEBDBD" />
+            <Button
+                android:id="@+id/back_btn"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginRight="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/content_tv"
+                android:text="收起"
+                android:textColor="#FFBEBDBD" />
+        </RelativeLayout>
+    </LinearLayout>
+
+
+</android.support.v7.widget.CardView>
