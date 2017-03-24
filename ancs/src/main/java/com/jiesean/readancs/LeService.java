@@ -243,7 +243,7 @@ public class LeService extends Service {
 
             BluetoothDevice device = result.getDevice();
 
-            if (device != null && device.getName().equals(Constants.DEVICE_NAME)) {
+            if (device.getName()!= null && device.getName().equals(Constants.DEVICE_NAME)) {
                 mStateIntent.putExtra("state", Constants.DEVICE_FIND);
                 sendBroadcast(mStateIntent);
                 mIphoneDevice = device;
@@ -290,24 +290,18 @@ public class LeService extends Service {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 BluetoothGattService ancsService = gatt.getService(UUID.fromString(Constants.service_ancs));
-                if (ancsService != null) {
-                    Log.d(TAG, "ANCS_FIND");
+                if (ancsService == null) {
+                    Log.d(TAG, "ANCS cannot find");
+                }
+                else{
+                    Log.d(TAG, "ANCS find");
+
                     mANCSService = ancsService;
                     mDataSourceChar = ancsService.getCharacteristic(UUID.fromString(Constants.characteristics_data_source));
                     mPointControlChar = ancsService.getCharacteristic(UUID.fromString(Constants.characteristics_control_point));
                     mNotificationSourceChar = ancsService.getCharacteristic(UUID.fromString(Constants.characteristics_notification_source));
-                    gatt.setCharacteristicNotification(mDataSourceChar, true);
-                    BluetoothGattDescriptor descriptor = mDataSourceChar.getDescriptor(
-                            UUID.fromString(Constants.descriptor_config));
-                    if (descriptor != null) {
-                        Log.d(TAG, "write descriptor");
-                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                        gatt.writeDescriptor(descriptor);
-                    } else {
-                        Log.d(TAG, "gatt disconnect");
-                    }
-                } else {
-                    Log.d(TAG, "ANCS_NOT_FIND");
+
+                    setNotificationEnabled(mDataSourceChar);
                 }
             }
         }
@@ -315,23 +309,12 @@ public class LeService extends Service {
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             Log.d(TAG, " onDescriptorWrite:: " + status);
-            Log.d(TAG, " BluetoothGatt.GATT_SUCCESS:: " + BluetoothGatt.GATT_SUCCESS);
 
             // Notification source
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (descriptor.getCharacteristic().getUuid().equals(UUID.fromString(Constants.characteristics_data_source))) {
+                    setNotificationEnabled(mNotificationSourceChar);
                     Log.d(TAG, "notification_source　订阅成功 ");
-                    if (Constants.characteristics_notification_source.equals(mNotificationSourceChar.getUuid().toString())) {
-                        gatt.setCharacteristicNotification(mNotificationSourceChar, true);
-                        BluetoothGattDescriptor notify_descriptor = mNotificationSourceChar.getDescriptor(
-                                UUID.fromString(Constants.descriptor_config));
-                        if (descriptor == null) {
-                            Log.d(TAG, " not find desc :: " + notify_descriptor.getUuid());
-                        } else {
-                            notify_descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                            gatt.writeDescriptor(notify_descriptor);
-                        }
-                    }
                 }
                 if (descriptor.getCharacteristic().getUuid().equals(UUID.fromString(Constants.characteristics_notification_source))) {
                     Log.d(TAG, "data_source　订阅成功 ");
@@ -427,5 +410,13 @@ public class LeService extends Service {
         }
     }
 
+    private void setNotificationEnabled(BluetoothGattCharacteristic characteristic) {
+        mConnectedGatt.setCharacteristicNotification(characteristic, true);
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(Constants.descriptor_config));
+        if (descriptor != null) {
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mConnectedGatt.writeDescriptor(descriptor);
+        }
+    }
 
 }
