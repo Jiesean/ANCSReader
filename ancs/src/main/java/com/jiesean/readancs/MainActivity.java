@@ -1,6 +1,7 @@
 package com.jiesean.readancs;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -55,21 +56,14 @@ public class MainActivity extends Activity {
     //service connection
     LeService.LocalBinder mService;
     ServiceConnection conn = new ServiceConnection() {
-        /**
-         * 开启service成功
-         * @param componentName
-         * @param iBinder　返回一个LocalBinder
-         */
+
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             Log.d(TAG, "onServiceConnected");
             mService = (LeService.LocalBinder) iBinder;
         }
-
         @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-
-        }
+        public void onServiceDisconnected(ComponentName componentName) { }
     };
 
     @Override
@@ -117,35 +111,27 @@ public class MainActivity extends Activity {
             public boolean animateDisappearance(@NonNull RecyclerView.ViewHolder viewHolder, @NonNull ItemHolderInfo preLayoutInfo, @Nullable ItemHolderInfo postLayoutInfo) {
                 return false;
             }
-
             @Override
             public boolean animateAppearance(@NonNull RecyclerView.ViewHolder viewHolder, @Nullable ItemHolderInfo preLayoutInfo, @NonNull ItemHolderInfo postLayoutInfo) {
                 return false;
             }
-
             @Override
             public boolean animatePersistence(@NonNull RecyclerView.ViewHolder viewHolder, @NonNull ItemHolderInfo preLayoutInfo, @NonNull ItemHolderInfo postLayoutInfo) {
                 return false;
             }
-
             @Override
             public boolean animateChange(@NonNull RecyclerView.ViewHolder oldHolder, @NonNull RecyclerView.ViewHolder newHolder, @NonNull ItemHolderInfo preLayoutInfo, @NonNull ItemHolderInfo postLayoutInfo) {
                 return false;
             }
-
             @Override
             public void runPendingAnimations() {
 
             }
-
             @Override
             public void endAnimation(RecyclerView.ViewHolder item) {
-
             }
-
             @Override
             public void endAnimations() {
-
             }
 
             @Override
@@ -166,7 +152,7 @@ public class MainActivity extends Activity {
                 //获得被点击按钮所在的cardview
                 CardView cardView = (CardView) moreLayout.getParent().getParent();
                 int position = mRecyclerView.getChildAdapterPosition(cardView);
-//                System.out.println("!!!!!!!!!!!posotion" + position) ;
+
                 //显示更多按钮被点击
                 if (view.getId() == R.id.more_info_btn) {
                     if (moreLayout.getVisibility() == View.GONE) {//如果是gone状态，则改为visible
@@ -254,26 +240,30 @@ public class MainActivity extends Activity {
                     case Constants.BOND_FAIL:
                         break;
                     case Constants.DEVICE_FIND:
-                        Toast.makeText(MainActivity.this, Constants.DEVICE_FIND, Toast.LENGTH_SHORT).show();
+                        showMessage(Constants.DEVICE_FIND);
                         break;
                     case Constants.NO_BLUETOOTH:
-                        Toast.makeText(MainActivity.this, "enable bluetooth", Toast.LENGTH_LONG).show();
+                        showMessage("enable bluetooth");
                         break;
                     case Constants.DISCONNECTED:
                         mConnectGattBtn.setVisibility(View.VISIBLE);
                         mConnectGattBtn.setClickable(true);
-//                        mShowStateIV.setVisibility(View.VISIBLE);
                         mShowTitleTextView.setText("No Device");
                         list.clear();
                         localAdapter.notifyDataSetChanged();
                         break;
                     case Constants.CONNECT_SUCCESS:
-                        Toast.makeText(MainActivity.this, Constants.CONNECT_SUCCESS, Toast.LENGTH_LONG).show();
-//                        mConnectGattBtn.setClickable(false);
+                        showMessage(Constants.CONNECT_SUCCESS);
                         mConnectGattBtn.setVisibility(View.GONE);
                         mShowStateIV.setVisibility(View.VISIBLE);
                         mShowTitleTextView.setText("Iphone");
                         break;
+                }
+            }
+
+            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                if (intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, -1) == BluetoothDevice.BOND_BONDED) {
+                    mService.connectToGattServer();
                 }
             }
         }
@@ -284,7 +274,12 @@ public class MainActivity extends Activity {
         intentFilter.addAction(Constants.ACTION_DATA_SOURCE);
         intentFilter.addAction(Constants.ACTION_NOTIFICATION_SOURCE);
         intentFilter.addAction(Constants.ACTION_STATE_INFO);
+        intentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         return intentFilter;
+    }
+
+    private void showMessage(String message){
+        Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
     }
 
     private class MyOnClickListener implements View.OnClickListener {

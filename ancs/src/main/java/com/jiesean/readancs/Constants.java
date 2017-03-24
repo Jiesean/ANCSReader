@@ -17,6 +17,7 @@ public class Constants {
     public static final String ACTION_DATA_SOURCE = "data";
     public static final String ACTION_STATE_INFO = "state";
     //device name
+    //scan iphone bluetooth service through this vertiual peripherial, you can use others
     public static final String DEVICE_NAME = "Heart Rate";
 
     //state

@@ -68,8 +68,6 @@ public class LeService extends Service {
 
     com.jiesean.readancs.dataprocess.Notification notification;
 
-    //*******************Service生命周期函数************************
-
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "service onBind");
@@ -112,15 +110,11 @@ public class LeService extends Service {
         }
     }
 
-    //*******************Service生命周期函数************************
-
     /**
      * 继承Binder类，实现localbinder,为activity提供操作接口
      */
     public class LocalBinder extends Binder {
-        /**
-         * 开始扫描
-         */
+
         public void startLeScan() {
             //蓝牙未打开
             if (mBluetoothAdapter == null) {
@@ -144,9 +138,6 @@ public class LeService extends Service {
             }
         }
 
-        /**
-         * 连接gatt
-         */
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         public void connectToGattServer() {
             if (mIphoneDevice != null) {
@@ -155,9 +146,6 @@ public class LeService extends Service {
             }
         }
 
-        /**
-         * 　处理通知
-         */
         public void negativeResponseToNotification(byte[] nid) {
 
             byte[] action = {
@@ -188,9 +176,6 @@ public class LeService extends Service {
             }
         }
 
-        /**
-         * 　处理通知
-         */
         public void positiveResponseToNotification(byte[] nid) {
 
             byte[] action = {
@@ -221,9 +206,6 @@ public class LeService extends Service {
             }
         }
 
-        /**
-         * 获取更多的通知的信息
-         */
         public void retrieveMoreInfo(byte[] nid) {
 
             byte[] getNotificationAttribute = {
@@ -258,52 +240,29 @@ public class LeService extends Service {
         }
     }
 
-    /**
-     * 扫描结果处理的回调类
-     */
+
     private class LocalScanCallBack extends ScanCallback {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            BluetoothDevice device = result
-                    .getDevice();
+            Log.d(TAG, "onScanResult Device Address :" + result.getDevice());
+
+            BluetoothDevice device = result.getDevice();
+
             if (device != null && device.getName().equals(Constants.DEVICE_NAME)) {
                 mStateIntent.putExtra("state", Constants.DEVICE_FIND);
                 sendBroadcast(mStateIntent);
+                mIphoneDevice = device;
+
                 //已经绑定，该设备在绑定的设备名单里面
                 if (mBluetoothAdapter.getBondedDevices().contains(device)) {
-                    if (mIphoneDevice != null && mIphoneDevice.equals(device)) {
-                        System.out.println("ssssssssssssssssssssss");
-                    }
-                    mIphoneDevice = device;
+
                     device.connectGatt(getApplicationContext(), false, mGattCallback);
                     mBluetoothLeScanner.stopScan(mScanCallback);
                 }
-                //未绑定的设备
-                else {
-                    //开始绑定
+                else {//未绑定的设备
                     device.createBond();
-                    while (true) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        //绑定成功了
-                        if (mBluetoothAdapter.getBondedDevices().contains(device)) {
-                            //成功绑定device
-                            mIphoneDevice = device;
-                            mIphoneDevice.connectGatt(getApplicationContext(), false, mGattCallback);
-                            //停止扫描
-                            mBluetoothLeScanner.stopScan(mScanCallback);
-                            Log.d(TAG, "绑定成功");
-                            break;
-
-                        }
-                    }
-
                 }
             }
-
         }
 
     }
@@ -316,17 +275,18 @@ public class LeService extends Service {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.d(TAG, "device connected");
+                Log.d(TAG, "connected");
+
                 mStateIntent.putExtra("state", Constants.CONNECT_SUCCESS);
                 sendBroadcast(mStateIntent);
-                // success, connect to gatt.
-                // find service
+
                 mConnectedGatt = gatt;
                 gatt.discoverServices();
             }
             if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                Log.d(TAG, "disconnected");
+
                 mConnectedGatt = null;
-                Log.d(TAG, "device disconnected");
                 mStateIntent.putExtra("state", Constants.DISCONNECTED);
                 sendBroadcast(mStateIntent);
             }
@@ -378,7 +338,6 @@ public class LeService extends Service {
                             gatt.writeDescriptor(notify_descriptor);
                         }
                     }
-//                    }
                 }
                 if (descriptor.getCharacteristic().getUuid().equals(UUID.fromString(Constants.characteristics_notification_source))) {
                     Log.d(TAG, "data_source　订阅成功 ");
