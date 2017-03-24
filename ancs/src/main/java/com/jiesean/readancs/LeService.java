@@ -118,7 +118,7 @@ public class LeService extends Service {
         public void startLeScan() {
             Log.d(TAG, "startLeScan");
 
-            if (mBluetoothAdapter.getState() ==BluetoothAdapter.STATE_OFF) {
+            if (mBluetoothAdapter.getState() == BluetoothAdapter.STATE_OFF) {
                 mBluetoothAdapter.enable();
             } else {
                 if (mConnectedGatt != null) {
@@ -243,7 +243,7 @@ public class LeService extends Service {
 
             BluetoothDevice device = result.getDevice();
 
-            if (device.getName()!= null && device.getName().equals(Constants.DEVICE_NAME)) {
+            if (device.getName() != null && device.getName().equals(Constants.DEVICE_NAME)) {
                 mStateIntent.putExtra("state", Constants.DEVICE_FIND);
                 sendBroadcast(mStateIntent);
                 mIphoneDevice = device;
@@ -253,8 +253,7 @@ public class LeService extends Service {
 
                     device.connectGatt(getApplicationContext(), false, mGattCallback);
                     mBluetoothLeScanner.stopScan(mScanCallback);
-                }
-                else {//未绑定的设备
+                } else {//未绑定的设备
                     device.createBond();
                 }
             }
@@ -292,8 +291,7 @@ public class LeService extends Service {
                 BluetoothGattService ancsService = gatt.getService(UUID.fromString(Constants.service_ancs));
                 if (ancsService == null) {
                     Log.d(TAG, "ANCS cannot find");
-                }
-                else{
+                } else {
                     Log.d(TAG, "ANCS find");
 
                     mANCSService = ancsService;
@@ -314,10 +312,10 @@ public class LeService extends Service {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (descriptor.getCharacteristic().getUuid().equals(UUID.fromString(Constants.characteristics_data_source))) {
                     setNotificationEnabled(mNotificationSourceChar);
-                    Log.d(TAG, "notification_source　订阅成功 ");
+                    Log.d(TAG, "data_source 订阅成功 ");
                 }
                 if (descriptor.getCharacteristic().getUuid().equals(UUID.fromString(Constants.characteristics_notification_source))) {
-                    Log.d(TAG, "data_source　订阅成功 ");
+                    Log.d(TAG, "notification_source　订阅成功 ");
                 }
             }
 
@@ -330,9 +328,6 @@ public class LeService extends Service {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.d(TAG, "onCharacteristicWrite");
-            if (Constants.characteristics_notification_source.toString().equals(characteristic.getUuid().toString())) {
-                Log.d(TAG, "notification_source  Write successful");
-            }
             if (Constants.characteristics_control_point.toString().equals(characteristic.getUuid().toString())) {
                 Log.d(TAG, "control_point  Write successful");
 
@@ -351,34 +346,18 @@ public class LeService extends Service {
                 byte[] nsData = characteristic.getValue();
                 notification = new com.jiesean.readancs.dataprocess.Notification(nsData);
                 mNotificationIntent.putExtra("notice", notification);
-                System.out.println("EventId:" + String.format("%d", nsData[0]) + "\n" +
-                        "EventFlags:" + String.format("%02x", nsData[1]) + "\n" +
-                        "Category id:" + String.format("%d", nsData[2]) + "\n" +
-                        "Category Count:" + String.format("%d", nsData[3]) + "\n" +
-                        "NotificationUId:" + String.format("%02X", nsData[4]) + String.format("%02X", nsData[5]) + String.format("%02X", nsData[6]) + String.format("%02X", nsData[7]) + "\n"
-                );
+//                System.out.println("EventId:" + String.format("%d", nsData[0]) + "\n" +
+//                        "EventFlags:" + String.format("%02x", nsData[1]) + "\n" +
+//                        "Category id:" + String.format("%d", nsData[2]) + "\n" +
+//                        "Category Count:" + String.format("%d", nsData[3]) + "\n" +
+//                        "NotificationUId:" + String.format("%02X", nsData[4]) + String.format("%02X", nsData[5]) + String.format("%02X", nsData[6]) + String.format("%02X", nsData[7]) + "\n"
+//                );
 
                 if ((nsData[0] & 0x02) > 0) {
                     sendBroadcast(mNotificationIntent);
                 } else {
-                        byte[] getNotificationAttribute = {
-                                (byte) 0x00,
-                                //UID
-                                nsData[4], nsData[5], nsData[6], nsData[7],
-//                            //app id
-//                            (byte) 0x00,
-                                //title
-                                (byte) 0x01, (byte) 0xff, (byte) 0xff,
-                                //message
-                                (byte) 0x03, (byte) 0xff, (byte) 0xff
-                        };
-
-                        if (mConnectedGatt != null) {
-                            mPointControlChar.setValue(getNotificationAttribute);
-                            mConnectedGatt.writeCharacteristic(mPointControlChar);
-                        }
+                    getMoreAboutNotification(nsData);
                 }
-
             }
             if (Constants.characteristics_data_source.toString().equals(characteristic.getUuid().toString())) {
                 Log.d(TAG, "characteristics_data_source changed");
@@ -416,6 +395,25 @@ public class LeService extends Service {
         if (descriptor != null) {
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             mConnectedGatt.writeDescriptor(descriptor);
+        }
+    }
+
+    private void getMoreAboutNotification(byte[] nsData) {
+        byte[] getNotificationAttribute = {
+                (byte) 0x00,
+                //UID
+                nsData[4], nsData[5], nsData[6], nsData[7],
+                //app id
+                //(byte) 0x00,
+                //title
+                (byte) 0x01, (byte) 0xff, (byte) 0xff,
+                //message
+                (byte) 0x03, (byte) 0xff, (byte) 0xff
+        };
+
+        if (mConnectedGatt != null) {
+            mPointControlChar.setValue(getNotificationAttribute);
+            mConnectedGatt.writeCharacteristic(mPointControlChar);
         }
     }
 
