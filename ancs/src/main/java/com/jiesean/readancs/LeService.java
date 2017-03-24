@@ -116,18 +116,13 @@ public class LeService extends Service {
     public class LocalBinder extends Binder {
 
         public void startLeScan() {
-            //蓝牙未打开
-            if (mBluetoothAdapter == null) {
-                mStateIntent.putExtra("state", Constants.NO_BLUETOOTH);
-                sendBroadcast(mStateIntent);
+            Log.d(TAG, "startLeScan");
+
+            if (mBluetoothAdapter.getState() ==BluetoothAdapter.STATE_OFF) {
+                mBluetoothAdapter.enable();
             } else {
                 if (mConnectedGatt != null) {
                     Log.d(TAG, "连接存在");
-                } else if (mIphoneDevice != null) {
-//                    mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-                    //开始扫描，并将扫描结果交给mScanCallback处理
-//                    mBluetoothLeScanner.startScan(mScanCallback);
-                    mIphoneDevice.connectGatt(getApplicationContext(), false, mGattCallback);
                 } else {
                     //获取leScanner
                     //api above 21
@@ -141,7 +136,7 @@ public class LeService extends Service {
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         public void connectToGattServer() {
             if (mIphoneDevice != null) {
-                Log.d(TAG, "连接gatt");
+                Log.d(TAG, "connect gatt");
                 mIphoneDevice.connectGatt(getApplicationContext(), false, mGattCallback);
             }
         }
@@ -264,7 +259,6 @@ public class LeService extends Service {
                 }
             }
         }
-
     }
 
     /**

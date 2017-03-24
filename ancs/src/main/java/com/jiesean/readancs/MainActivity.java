@@ -1,6 +1,7 @@
 package com.jiesean.readancs;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -260,10 +261,18 @@ public class MainActivity extends Activity {
                         break;
                 }
             }
-
             if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 if (intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, -1) == BluetoothDevice.BOND_BONDED) {
+                    showMessage("Bluetooth ON");
+                    mService.startLeScan();
+                }
+            }
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_ON) {
                     mService.connectToGattServer();
+                }
+                if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF) {
+                    showMessage("Bluetooth OFF");
                 }
             }
         }
@@ -275,6 +284,7 @@ public class MainActivity extends Activity {
         intentFilter.addAction(Constants.ACTION_NOTIFICATION_SOURCE);
         intentFilter.addAction(Constants.ACTION_STATE_INFO);
         intentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         return intentFilter;
     }
 
